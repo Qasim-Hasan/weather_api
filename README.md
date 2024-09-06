@@ -8,3 +8,6 @@ Now i the folder where we have our docker file we will open our terminal
 For first Time Running: docker-compose up --build
 
 For Refreshing: docker-compose up
+
+Other way:
+To run directly where the main.py is located : python -m uvicorn main:app --reload 
