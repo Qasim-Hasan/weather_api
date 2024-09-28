@@ -12,7 +12,7 @@ from pydantic import BaseModel
 # Import the Admin model from models.py
 from models import Admin  # <-- Import your models here
 from sqlalchemy import text
-from crud import AdminLogin, create_admin, get_admin_by_username, AdminCreate, AdminResponse, login_admin  # Import CRUD functions and Pydantic models
+from crud import create_admin, get_admin_by_username, AdminCreate, AdminResponse  # Import CRUD functions and Pydantic models
 import bcrypt
 app = FastAPI()
 router = APIRouter()
@@ -66,9 +66,24 @@ async def get_admin_by_username_route(username: str, db: db_dependency):
     return admin
 
 # Pydantic model for admin login
+class AdminLogin(BaseModel):
+    username: str
+    password: str
+
+@app.post("/admin/login", response_model=AdminLogin)
+async def login_admin(admin: AdminLogin, db: db_dependency):
+    query = text("SELECT id, username, password FROM admins WHERE username = :username")
+    result = db.execute(query, {"username": admin.username}).fetchone()
+    
+    if result is None:
+        raise HTTPException(status_code=404, detail="Admin not found")
+
+    stored_password = result[2]
+
+    if not bcrypt.checkpw(admin.password.encode('utf-8'), stored_password.encode('utf-8')):
+        raise HTTPException(status_code=403, detail="Invalid password")
+
+    return AdminResponse(id=result[0], username=result[1])
 
 
-@app.post("/admin/login", response_model=AdminResponse)
-async def login_admin_route(admin: AdminLogin, db: Annotated[Session, Depends(get_db)]):
-    return login_admin(db, admin)  # Call the login_admin function from crud.py
 

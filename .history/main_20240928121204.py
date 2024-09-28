@@ -12,8 +12,7 @@ from pydantic import BaseModel
 # Import the Admin model from models.py
 from models import Admin  # <-- Import your models here
 from sqlalchemy import text
-from crud import AdminLogin, create_admin, get_admin_by_username, AdminCreate, AdminResponse, login_admin  # Import CRUD functions and Pydantic models
-import bcrypt
+
 app = FastAPI()
 router = APIRouter()
 models.Base.metadata.create_all(bind=engine)
@@ -31,10 +30,9 @@ app.add_middleware(
 def root():
     return {"message": "Hello World"}
 
-# Include other routers
+# Station data is in csv
 app.include_router(csv_data)
 app.include_router(image_data)
-
 # Static files serving
 app.mount("/assets", StaticFiles(directory="assets"), name="assets")
 
@@ -65,10 +63,4 @@ async def get_admin_by_username_route(username: str, db: db_dependency):
 
     return admin
 
-# Pydantic model for admin login
-
-
-@app.post("/admin/login", response_model=AdminResponse)
-async def login_admin_route(admin: AdminLogin, db: Annotated[Session, Depends(get_db)]):
-    return login_admin(db, admin)  # Call the login_admin function from crud.py
 

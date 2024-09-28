@@ -64,4 +64,3 @@ def login_admin(db: Session, admin: AdminLogin):
 
     # Return admin details if the password is correct
     return AdminResponse(id=result[0], username=result[1])  # Assuming AdminResponse is already imported or defined in this file
-

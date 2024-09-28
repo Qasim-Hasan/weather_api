@@ -1,19 +1,15 @@
-from fastapi import FastAPI, HTTPException, Depends,status
-from fastapi.middleware.cors import CORSMiddleware  # Import CORS middleware
-from fastapi import FastAPI, APIRouter
+from fastapi import FastAPI, HTTPException, Depends, status
+from fastapi.middleware.cors import CORSMiddleware
+from fastapi import APIRouter
 from fastapi.staticfiles import StaticFiles
-from controllers.csv_data.station import router as csv_data
-from controllers.image_data.images import router as image_data
 from typing import Annotated
-import models 
-from database import engine,SessionLocal
+import models
+from database import engine, SessionLocal
 from sqlalchemy.orm import Session
 from pydantic import BaseModel
-# Import the Admin model from models.py
-from models import Admin  # <-- Import your models here
 from sqlalchemy import text
-from crud import AdminLogin, create_admin, get_admin_by_username, AdminCreate, AdminResponse, login_admin  # Import CRUD functions and Pydantic models
-import bcrypt
+from crud import create_admin, get_admin_by_username, login_admin, AdminCreate, AdminResponse, AdminLogin  # Import CRUD functions and Pydantic models
+
 app = FastAPI()
 router = APIRouter()
 models.Base.metadata.create_all(bind=engine)
@@ -66,9 +62,23 @@ async def get_admin_by_username_route(username: str, db: db_dependency):
     return admin
 
 # Pydantic model for admin login
-
+class AdminLogin(BaseModel):
+    username: str
+    password: str
 
 @app.post("/admin/login", response_model=AdminResponse)
-async def login_admin_route(admin: AdminLogin, db: Annotated[Session, Depends(get_db)]):
-    return login_admin(db, admin)  # Call the login_admin function from crud.py
+async def login_admin_route(admin: AdminLogin, db: db_dependency):
+    # Fetch admin details by username
+    query = text("SELECT id, username, password FROM admins WHERE username = :username")
+    result = db.execute(query, {"username": admin.username}).fetchone()
+    
+    if result is None:
+        raise HTTPException(status_code=404, detail="Admin not found")
 
+    # Validate the provided password against the stored password
+    stored_password = result[2]  # Assuming password is the third column in your result
+    if stored_password != admin.password:
+        raise HTTPException(status_code=403, detail="Invalid password")
+
+    # Return admin details if the password is correct
+    return AdminResponse(id=result[0], username=result[1], password=stored_password)  # Include password in response

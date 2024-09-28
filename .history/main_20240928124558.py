@@ -12,7 +12,7 @@ from pydantic import BaseModel
 # Import the Admin model from models.py
 from models import Admin  # <-- Import your models here
 from sqlalchemy import text
-from crud import AdminLogin, create_admin, get_admin_by_username, AdminCreate, AdminResponse, login_admin  # Import CRUD functions and Pydantic models
+from crud import create_admin, get_admin_by_username, AdminCreate, AdminResponse  # Import CRUD functions and Pydantic models
 import bcrypt
 app = FastAPI()
 router = APIRouter()
@@ -66,9 +66,37 @@ async def get_admin_by_username_route(username: str, db: db_dependency):
     return admin
 
 # Pydantic model for admin login
-
+class AdminLogin(BaseModel):
+    username: str
+    password: str
 
 @app.post("/admin/login", response_model=AdminResponse)
-async def login_admin_route(admin: AdminLogin, db: Annotated[Session, Depends(get_db)]):
-    return login_admin(db, admin)  # Call the login_admin function from crud.py
+async def login_admin(admin: AdminLogin, db: Session = Depends(db_dependency)):
+    print(f"Login attempt for username: {admin.username}")
+    
+    # Fetch admin details by username
+    query = text("SELECT id, username, password FROM admins WHERE username = :username")
+    result = db.execute(query, {"username": admin.username}).fetchone()
+    
+    if result is None:
+        print("Admin not found in the database")
+        raise HTTPException(status_code=404, detail="Admin not found")
+
+    # Extract the stored password
+    stored_password = result[2]  # Assuming password is the third column in your result
+    print(f"Stored password: {stored_password}, Provided password: {admin.password}")
+
+    # Compare the provided password with the stored password
+    if stored_password != admin.password:
+        print("Invalid password provided")
+        raise HTTPException(status_code=403, detail="Invalid password")
+
+    # Return admin details if the password is correct
+    admin_response = AdminResponse(id=result[0], username=result[1])
+    print(f"Login successful for user: {admin_response.username}")
+    
+    return admin_response
+
+
+
 

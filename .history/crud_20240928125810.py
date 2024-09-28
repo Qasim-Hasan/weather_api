@@ -2,7 +2,7 @@ from sqlalchemy.orm import Session
 from sqlalchemy import text
 from pydantic import BaseModel
 from models import Admin  # Assuming Admin is your SQLAlchemy model
-from fastapi import FastAPI, HTTPException, Depends,status
+
 # Define Pydantic models
 class AdminCreate(BaseModel):
     username: str
@@ -42,7 +42,10 @@ def get_admin_by_username(db: Session, username: str) -> AdminResponse:
 
     return AdminResponse(id=result[0], username=result[1], password=result[2])  # Include password in response
 
-def login_admin(db: Session, admin: AdminLogin):
+
+
+# New function for admin login logic
+def login_admin_logic(db: Session, admin: AdminLogin) -> AdminResponse:
     print(f"Login attempt for username: {admin.username}")
     
     # Fetch admin details by username
@@ -55,13 +58,12 @@ def login_admin(db: Session, admin: AdminLogin):
 
     # Extract the stored password
     stored_password = result[2]  # Assuming password is the third column in your result
-    print(f"Stored password: {stored_password}, Provided password: {admin.password}")
+    print(f"Stored password hash: {stored_password}, Provided password: {admin.password}")
 
-    # Compare the provided password with the stored password
-    if stored_password != admin.password:
+    # Compare the provided password with the stored hashed password
+    if not verify_admin_password(stored_password, admin.password):
         print("Invalid password provided")
         raise HTTPException(status_code=403, detail="Invalid password")
 
     # Return admin details if the password is correct
-    return AdminResponse(id=result[0], username=result[1])  # Assuming AdminResponse is already imported or defined in this file
-
+    return AdminResponse(id=result[0], username=result[1])
