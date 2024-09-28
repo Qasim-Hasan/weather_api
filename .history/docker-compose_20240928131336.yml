@@ -11,4 +11,4 @@ services:
       - .:/app
     environment:
       - PYTHONUNBUFFERED=1
-       
+      - DATABASE_URL=mysql+pymysql://root:admin@mysql:3306/weather 

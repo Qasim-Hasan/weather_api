@@ -3,8 +3,8 @@ from sqlalchemy.orm import sessionmaker
 from sqlalchemy.ext.declarative import declarative_base
 
 # Correct the URL_DATABASE to use 'pymysql'
-URL_DATABASE = 'mysql+pymysql://root:admin@localhost:3306/weather'
-#URL_DATABASE = "mysql+pymysql://root:admin@host.docker.internal:3306/weather"
+#URL_DATABASE = 'mysql+pymysql://root:admin@localhost:3306/weather'
+URL_DATABASE = "mysql+pymysql://username:password@host.docker.internal:3306/database_name"
 
 engine = create_engine(URL_DATABASE)
 

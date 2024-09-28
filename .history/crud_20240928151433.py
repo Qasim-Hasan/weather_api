@@ -8,10 +8,12 @@ class AdminCreate(BaseModel):
     username: str
     password: str
 
-# AdminResponse Pydantic model to return success or failure
 class AdminResponse(BaseModel):
-    success: bool
-    message: str
+    id: int
+    username: str
+    
+    class Config:
+        from_attributes = True  # Enables compatibility with ORM
         
         # Pydantic model for admin login
 class AdminLogin(BaseModel):
