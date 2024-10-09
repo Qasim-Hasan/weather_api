@@ -12,9 +12,9 @@ def is_running_in_docker():
 
 # Set the database URL based on environment
 if is_running_in_docker():
-    URL_DATABASE = "mysql+pymysql://root:admin@host.docker.internal:3306/weather"
+    URL_DATABASE = "mysql+pymysql://root:admin@host.docker.internal:3369/weather"
 else:
-    URL_DATABASE = "mysql+pymysql://root:admin@localhost:3306/weather"
+    URL_DATABASE = "mysql+pymysql://root:admin@localhost:3369/weather"
 
 engine = create_engine(URL_DATABASE)
 
