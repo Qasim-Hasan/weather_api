@@ -1,10 +1,7 @@
-import subprocess
-import threading
 from fastapi import FastAPI, HTTPException, Depends,status
 from fastapi.middleware.cors import CORSMiddleware  # Import CORS middleware
 from fastapi import FastAPI, APIRouter
 from fastapi.staticfiles import StaticFiles
-from requests_cache import Optional
 from controllers.csv_data.station import router as csv_data
 from controllers.image_data.images import router as image_data
 from typing import Annotated
@@ -18,14 +15,14 @@ from fastapi import HTTPException, status, Depends, BackgroundTasks
 from sqlalchemy.orm import Session
 from fastapi import FastAPI, BackgroundTasks, status
 # Import the Admin model from models.py
-from models import Admin, DataTypeRequest  # <-- Import your models here
+from models import Admin  # <-- Import your models here
 from sqlalchemy import text
 # Import the function from get_data.py
 from data_generation.get_data import fetch_weather_data
 import time
 from contextlib import asynccontextmanager
 
-app = FastAPI()
+app = FastAPI(lifespan=True)
 router = APIRouter()
 models.Base.metadata.create_all(bind=engine)
 
@@ -60,8 +57,6 @@ def get_db():
 db_dependency = Annotated[Session, Depends(get_db)]
 
 
-
-
 # Admin creation
 @app.post("/admin/", status_code=status.HTTP_201_CREATED)
 async def create_admin_route(
@@ -93,30 +88,22 @@ async def login_admin_route(admin: AdminLogin, db: Annotated[Session, Depends(ge
     return login_admin(db, admin)  # Call the login_admin function from crud.py
 
 
-# Background task to fetch weather data and run other scripts periodically
-def periodic_weather_data_fetch():
+# Background task to run the data generation function
+def periodic_data_generation():
     while True:
-        fetch_weather_data()  # Your function to fetch weather data
-        
-        # List of scripts to run, including the folder path
-        scripts = [
-            './data_generation/isobar.py',
-            './data_generation/isotherm.py',
-          #  './data_generation/isotach.py',
-          #  './data_generation/isohume.py',
-          #  './data_generation/isohyet.py',
-          # './data_generation/isodrosotherm.py',
-          #  './data_generation/isoneph.py',
-          #  './data_generation/isogon.py'
-        ]
-        
-        for script in scripts:
-            subprocess.run(['python', script], check=True)  # Run each script
-
+        fetch_weather_data()  # Your function to generate data
         time.sleep(60)  # Run every 1 minute
 
 
-# Start the background thread on application startup
-@app.on_event("startup")
-def startup_event():
-    threading.Thread(target=periodic_weather_data_fetch, daemon=True).start()
+# Use lifespan to handle startup and shutdown events
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    # On startup, start the background task
+    app.add_task(fetch_weather_data)
+
+    yield  # Control is passed to the application here
+
+    # On shutdown, the background task will stop when the app stops
+    # You can add cleanup logic if necessary
+
+app = FastAPI(lifespan=lifespan)

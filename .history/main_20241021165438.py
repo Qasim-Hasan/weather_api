@@ -59,6 +59,13 @@ def get_db():
 
 db_dependency = Annotated[Session, Depends(get_db)]
 
+received_data_type: str = "synop"
+@app.post("/data-type", response_model=dict, status_code=status.HTTP_201_CREATED)
+async def receive_data_type(data: DataTypeRequest):
+    global received_data_type  # Declare the global variable
+    received_data_type = data.datatype  # Update the data type
+    print(f"Received data type: {received_data_type}")
+    return {"message": "Data type received successfully", "datatype": received_data_type}
 
 
 

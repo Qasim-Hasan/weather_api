@@ -58,8 +58,13 @@ def get_db():
         db.close()
 
 db_dependency = Annotated[Session, Depends(get_db)]
-
-
+received_data_type: str = "synop"
+@app.post("/data-type", response_model=dict, status_code=status.HTTP_201_CREATED)
+async def receive_data_type(data: DataTypeRequest):
+    global received_data_type  # Declare the global variable
+    received_data_type = data.datatype
+    print(f"Received data type: {data.datatype}")
+    return {"message": "Data type received successfully", "datatype": data.datatype}
 
 
 # Admin creation

@@ -28,7 +28,8 @@ from contextlib import asynccontextmanager
 app = FastAPI()
 router = APIRouter()
 models.Base.metadata.create_all(bind=engine)
-
+# Global variable to hold the data type
+received_data_type: Optional[str] = None
 # CORS middleware
 app.add_middleware(
     CORSMiddleware,
@@ -59,7 +60,16 @@ def get_db():
 
 db_dependency = Annotated[Session, Depends(get_db)]
 
+@app.post("/data-type", response_model=dict, status_code=status.HTTP_201_CREATED)
+async def receive_data_type(data: DataTypeRequest):
+    global received_data_type  # Declare the global variable
+    received_data_type = data.datatype
+    print(f"Received data type: {data.datatype}")
+    
+    # Here you can implement any logic you need to handle the received data
+    # For example, you might want to fetch some weather data based on the data type
 
+    return {"message": "Data type received successfully", "datatype": data.datatype}
 
 
 # Admin creation
@@ -101,11 +111,12 @@ def periodic_weather_data_fetch():
         # List of scripts to run, including the folder path
         scripts = [
             './data_generation/isobar.py',
+          
             './data_generation/isotherm.py',
           #  './data_generation/isotach.py',
           #  './data_generation/isohume.py',
           #  './data_generation/isohyet.py',
-          # './data_generation/isodrosotherm.py',
+            './data_generation/isodrosotherm.py',
           #  './data_generation/isoneph.py',
           #  './data_generation/isogon.py'
         ]

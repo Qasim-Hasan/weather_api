@@ -1,6 +1,5 @@
 from fastapi import APIRouter, Query
 from fastapi.responses import JSONResponse
-from pydantic import BaseModel
 
 router = APIRouter()
 

@@ -1,22 +1,10 @@
 from fastapi import APIRouter, Query
 from fastapi.responses import JSONResponse
-from pydantic import BaseModel
 
 router = APIRouter()
 
-# Global variable to hold the received data type
+# Assume received_data_type is defined globally somewhere in your main application.
 received_data_type: str = "synop"  # Default data type
-
-# Request model for the data type
-class DataTypeRequest(BaseModel):
-    datatype: str
-
-@router.post("/data-type", response_model=dict, status_code=201)
-async def receive_data_type(data: DataTypeRequest):
-    global received_data_type  # Declare the global variable
-    received_data_type = data.datatype  # Update the data type
-    print(f"Received data type: {received_data_type}")
-    return {"message": "Data type received successfully", "datatype": received_data_type}
 
 @router.get("/image-data")
 def get_image_data(

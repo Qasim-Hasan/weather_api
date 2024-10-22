@@ -1,0 +1,11 @@
+fastapi
+uvicorn[standard]
+sqlalchemy
+pymysql
+bcrypt
+passlib
+pydantic[email]
+openmeteo_requests
+requests_cache
+pandas
+retry_requests

@@ -4,7 +4,6 @@ from fastapi import FastAPI, HTTPException, Depends,status
 from fastapi.middleware.cors import CORSMiddleware  # Import CORS middleware
 from fastapi import FastAPI, APIRouter
 from fastapi.staticfiles import StaticFiles
-from requests_cache import Optional
 from controllers.csv_data.station import router as csv_data
 from controllers.image_data.images import router as image_data
 from typing import Annotated
@@ -18,7 +17,7 @@ from fastapi import HTTPException, status, Depends, BackgroundTasks
 from sqlalchemy.orm import Session
 from fastapi import FastAPI, BackgroundTasks, status
 # Import the Admin model from models.py
-from models import Admin, DataTypeRequest  # <-- Import your models here
+from models import Admin  # <-- Import your models here
 from sqlalchemy import text
 # Import the function from get_data.py
 from data_generation.get_data import fetch_weather_data
@@ -60,8 +59,6 @@ def get_db():
 db_dependency = Annotated[Session, Depends(get_db)]
 
 
-
-
 # Admin creation
 @app.post("/admin/", status_code=status.HTTP_201_CREATED)
 async def create_admin_route(
@@ -100,14 +97,7 @@ def periodic_weather_data_fetch():
         
         # List of scripts to run, including the folder path
         scripts = [
-            './data_generation/isobar.py',
-            './data_generation/isotherm.py',
-          #  './data_generation/isotach.py',
-          #  './data_generation/isohume.py',
-          #  './data_generation/isohyet.py',
-          # './data_generation/isodrosotherm.py',
-          #  './data_generation/isoneph.py',
-          #  './data_generation/isogon.py'
+            './data_generation/isobar.py'
         ]
         
         for script in scripts:

@@ -4,7 +4,6 @@ from fastapi import FastAPI, HTTPException, Depends,status
 from fastapi.middleware.cors import CORSMiddleware  # Import CORS middleware
 from fastapi import FastAPI, APIRouter
 from fastapi.staticfiles import StaticFiles
-from requests_cache import Optional
 from controllers.csv_data.station import router as csv_data
 from controllers.image_data.images import router as image_data
 from typing import Annotated
@@ -59,7 +58,15 @@ def get_db():
 
 db_dependency = Annotated[Session, Depends(get_db)]
 
+@app.post("/data-type", response_model=dict, status_code=status.HTTP_201_CREATED)
+async def receive_data_type(data: DataTypeRequest):
+    # Process the received data type
+    print(f"Received data type: {data.datatype}")
+    
+    # Here you can implement any logic you need to handle the received data
+    # For example, you might want to fetch some weather data based on the data type
 
+    return {"message": "Data type received successfully", "datatype": data.datatype}
 
 
 # Admin creation
@@ -101,11 +108,12 @@ def periodic_weather_data_fetch():
         # List of scripts to run, including the folder path
         scripts = [
             './data_generation/isobar.py',
+          
             './data_generation/isotherm.py',
           #  './data_generation/isotach.py',
           #  './data_generation/isohume.py',
           #  './data_generation/isohyet.py',
-          # './data_generation/isodrosotherm.py',
+            './data_generation/isodrosotherm.py',
           #  './data_generation/isoneph.py',
           #  './data_generation/isogon.py'
         ]
