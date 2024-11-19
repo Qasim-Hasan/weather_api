@@ -29,7 +29,5 @@ engine = create_engine(
     pool_pre_ping=True   # Ensures connections are checked before use
 )# Adjust to your wait_timeout value
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
-# Create a session and set session-level timeout (if supported)
-
 Base = declarative_base()
 

@@ -30,6 +30,8 @@ engine = create_engine(
 )# Adjust to your wait_timeout value
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 # Create a session and set session-level timeout (if supported)
-
+with SessionLocal() as session:
+    session.execute('SET SESSION wait_timeout = 28800')
+    session.execute('SET SESSION interactive_timeout = 28800')
 Base = declarative_base()
 

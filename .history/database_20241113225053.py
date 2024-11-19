@@ -23,13 +23,7 @@ else:
     
     
 # Initialize SQLAlchemy engine and session
-engine = create_engine(
-    URL_DATABASE, 
-    pool_recycle=28000,  # Adjust to your wait_timeout value
-    pool_pre_ping=True   # Ensures connections are checked before use
-)# Adjust to your wait_timeout value
+engine = create_engine(URL_DATABASE, pool_recycle=28000)  # Adjust to your wait_timeout value
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
-# Create a session and set session-level timeout (if supported)
-
 Base = declarative_base()
 
